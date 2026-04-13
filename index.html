@@ -176,12 +176,13 @@
     <div class="card">
         <div class="form-group">
             <label>📅 Bulan & Tahun</label>
-            <input type="text" id="bulan" value="APRIL 2026" placeholder="Contoh: APRIL 2026">
+            <span class="help-text">Ketuk untuk memilih bulan dan tahun:</span>
+            <input type="month" id="bulan" value="2026-04">
         </div>
         <div class="form-group">
             <label>📆 Tanggal Pengecekan</label>
-            <span class="help-text">Contoh isian: 8 April</span>
-            <input type="text" id="tanggal" placeholder="Ketik tanggal di sini...">
+            <span class="help-text">Ketuk ikon kalender untuk memilih tanggal:</span>
+            <input type="date" id="tanggal">
         </div>
     </div>
 
@@ -240,9 +241,34 @@
     }
     posContainer.innerHTML = posHTML;
 
+    // Fungsi untuk merapikan format Bulan Tahun
+    function formatBulan(val) {
+        if (!val) return '...';
+        const namaBulan = ["JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"];
+        const parts = val.split('-');
+        const tahun = parts[0];
+        const bulanIndex = parseInt(parts[1]) - 1;
+        return `${namaBulan[bulanIndex]} ${tahun}`;
+    }
+
+    // Fungsi untuk merapikan format Tanggal
+    function formatTanggal(val) {
+        if (!val) return '...';
+        const namaBulanKecil = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        const parts = val.split('-');
+        const hari = parseInt(parts[2]);
+        const bulanIndex = parseInt(parts[1]) - 1;
+        return `${hari} ${namaBulanKecil[bulanIndex]}`;
+    }
+
     function generateReport() {
-        const bulan = document.getElementById('bulan').value || '...';
-        const tanggal = document.getElementById('tanggal').value || '...';
+        // Ambil data mentah dari input kalender
+        const rawBulan = document.getElementById('bulan').value;
+        const rawTanggal = document.getElementById('tanggal').value;
+        
+        // Ubah formatnya ke teks yang rapi (Contoh: "APRIL 2026" dan "8 April")
+        const bulan = formatBulan(rawBulan);
+        const tanggal = formatTanggal(rawTanggal);
         
         let teksLaporan = `*Lap Cek Aset SSB*\n${bulan} (1x per pekan)\n\n`;
 
@@ -263,7 +289,6 @@
         document.getElementById('hasilLaporan').value = teksLaporan.trim();
     }
 
-    // UPDATE: Hanya menyalin teks, tidak membuka WhatsApp
     function salinLaporan() {
         const laporan = document.getElementById('hasilLaporan').value;
         if (!laporan) {
@@ -271,12 +296,18 @@
             return;
         }
 
-        navigator.clipboard.writeText(laporan).then(() => {
-            // Tampilkan pesan berhasil disalin
+        // Karena copy to clipboard di browser kadang diblokir, ini solusinya
+        const textarea = document.createElement('textarea');
+        textarea.value = laporan;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand('copy');
             alert('✅ Teks berhasil disalin! Silakan buka WhatsApp dan tempel (paste) pesannya.');
-        }).catch(err => {
+        } catch (err) {
             alert('Gagal menyalin teks otomatis, silakan salin manual dari kotak teks.');
-        });
+        }
+        document.body.removeChild(textarea);
     }
 </script>
 
